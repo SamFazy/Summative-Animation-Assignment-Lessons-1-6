@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -11,6 +12,7 @@ namespace Summative_Animation_Assignment_Lessons_1_6
         MouseState mouseState;
 
         Texture2D applePearIntroTexture;
+        Texture2D appleWinScreenTexture;
 
         Texture2D raceTrackTexture;
         Rectangle raceTrackRect;
@@ -27,8 +29,8 @@ namespace Summative_Animation_Assignment_Lessons_1_6
         Rectangle pearRect;
         Vector2 pearSpeed;
 
-        Texture2D appleWinScreenTexture;
-        Rectangle appleWinScreenRect;
+        SoundEffect Music;
+        SoundEffectInstance MusicInstance;
 
 
         public Game1()
@@ -45,7 +47,8 @@ namespace Summative_Animation_Assignment_Lessons_1_6
         enum Screen
         {
             Intro,
-            ApplePearRaceBackground
+            ApplePearRaceBackground,
+            End
         }
 
         Screen screen;
@@ -61,12 +64,11 @@ namespace Summative_Animation_Assignment_Lessons_1_6
             raceTrackSpeedDouble = new Vector2(-50, 0);
 
             appleRect = new Rectangle(-400, 300, 100, 100);
-            appleSpeed = new Vector2(3, 0);
+            appleSpeed = new Vector2(2, 0);
 
             pearRect = new Rectangle(-110, 390, 100, 100);
-            pearSpeed = new Vector2(2, 0);
+            pearSpeed = new Vector2(1, 0);
 
-            appleWinScreenRect = new Rectangle(-1000, -1000, 800, 500);
 
             base.Initialize();
         }
@@ -86,19 +88,29 @@ namespace Summative_Animation_Assignment_Lessons_1_6
 
             appleTexture = Content.Load<Texture2D>("apple");
             pearTexture = Content.Load<Texture2D>("pear");
+
+            Music = Content.Load<SoundEffect>("Coconut Mall");
+            MusicInstance = Music.CreateInstance();
         }
 
         protected override void Update(GameTime gameTime)
         {
             mouseState = Mouse.GetState();
 
+            
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+                
 
             if (screen == Screen.Intro)
             {
-                if (mouseState.LeftButton == ButtonState.Pressed)
+                if (mouseState.LeftButton == ButtonState.Pressed || gameTime.TotalGameTime.TotalSeconds > 10)
+                {
                     screen = Screen.ApplePearRaceBackground;
+                    MusicInstance.Play();
+                }
+                    
             }
             else if (screen == Screen.ApplePearRaceBackground)
             {
@@ -118,8 +130,9 @@ namespace Summative_Animation_Assignment_Lessons_1_6
 
                 if (pearRect.X == 804)
                 {
-                    appleWinScreenRect = new Rectangle(0, 0, 800, 500);
+                    screen = Screen.End;
                 }
+
 
             }
 
@@ -148,10 +161,18 @@ namespace Summative_Animation_Assignment_Lessons_1_6
 
                 _spriteBatch.Draw(appleTexture, appleRect, Color.White);
                 _spriteBatch.Draw(pearTexture, pearRect, Color.White);
-
-                _spriteBatch.Draw(appleWinScreenTexture, appleWinScreenRect, Color.White);
+                
             }
-
+            else if (screen == Screen.End)
+            {
+                _spriteBatch.Draw(appleWinScreenTexture, new Rectangle(0, 0, 800, 500), Color.White);
+                
+                if (gameTime.TotalGameTime.TotalSeconds > 40)
+                {
+                    Exit();
+                }
+            }
+               
             _spriteBatch.End();
 
             base.Draw(gameTime);
